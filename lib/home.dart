@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:push_notifications/firebase_api.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -10,10 +11,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? fcmToken;
+  late TextEditingController textController;
 
   @override
   void initState() {
     super.initState();
+    textController = TextEditingController();
     _fetchFcmToken();
   }
 
@@ -40,7 +43,31 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: Text("FMC Token: $fcmToken"),
-            )
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (fcmToken != null && fcmToken!.isNotEmpty) {
+                  try {
+                    await Clipboard.setData(ClipboardData(text: fcmToken!));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('FCM Token copied to Clipboard!')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content:
+                              Text('Failed to copy FCM token to clipboard.')),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('FCM token is empty or not available.')),
+                  );
+                }
+              },
+              child: const Text('Copy FCM Token to Clipboard'),
+            ),
           ],
         ),
       ),
