@@ -22,8 +22,8 @@ void main() async {
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  FirebaseApi firebaseApi = FirebaseApi();
-  await firebaseApi.initNotifications();
+  // FirebaseApi firebaseApi = FirebaseApi();
+  // await firebaseApi.initNotifications();
 }
 
 class MyApp extends StatelessWidget {
@@ -77,8 +77,10 @@ class _HomeScreenState extends State<HomeScreen> {
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       // Show the in-app popup
-      _showInAppPopup(message.notification?.title ?? 'No Title',
-          message.notification?.body ?? 'No Body');
+      if (message.notification != null) {
+        _showInAppPopup(message.notification?.title ?? 'No Title',
+            message.notification?.body ?? 'No Body');
+      }
     });
   }
 
