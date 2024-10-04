@@ -1,10 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:push_notifications/firebase_api.dart';
+// import 'package:push_notifications/firebase_api.dart';
 import 'package:push_notifications/firebase_options.dart';
-import 'package:push_notifications/home.dart';
+// import 'package:push_notifications/home.dart';
 import 'package:push_notifications/notification.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -84,6 +86,50 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _acceptBookingApi() async {
+    const url = 'http://192.168.29.151:8000/acceptbooking';
+
+    // Request body
+    final Map<String, dynamic> requestBody = {
+      "bookingId": "01J98P6AJB4R6BY64QNPKRR57Z",
+      "partnerId": "01HQ2J3K5N6M7P8R9T0V1W307"
+    };
+
+    try {
+      // Send POST request
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(requestBody),
+      );
+
+      // Check if the request was successful
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        print('Response: $responseBody');
+
+        // Optionally show a success message to the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Booking Accepted: ${responseBody['bookingId']}')),
+        );
+      } else {
+        print('Failed to accept booking. Status code: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to accept booking')),
+        );
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('An error occurred while accepting the booking')),
+      );
+    }
+  }
+
   void _showInAppPopup(String title, String body) {
     showDialog(
       context: context,
@@ -93,7 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
           content: Text(body),
           actions: [
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                await _acceptBookingApi();
                 Navigator.of(context).pop(); // Dismiss the popup
               },
               child: const Text('Accept'),
